@@ -12,6 +12,8 @@
   "license": "MIT",
   "dependencies": {
     "amqp": "^0.2.4",
+    "chalk": "^1.1.1",
+    "minimist": "^1.2.0",
     "uglifycss": "0.0.18",
     "uglifyjs": "^2.4.10"
   }
