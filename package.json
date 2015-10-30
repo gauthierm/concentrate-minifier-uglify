@@ -1,0 +1,18 @@
+{
+  "name": "uglify-queue",
+  "version": "0.1.0",
+  "description": "AMQP based Uglify JS and Uglify CSS server.",
+  "private": true,
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "repository": "",
+  "author": "Michael Gauthier",
+  "license": "MIT",
+  "dependencies": {
+    "amqp": "^0.2.4",
+    "uglifycss": "0.0.18",
+    "uglifyjs": "^2.4.10"
+  }
+}
