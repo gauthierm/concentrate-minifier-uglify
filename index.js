@@ -4,8 +4,8 @@ var amqp = require('amqp');
 var util = require('./lib/util');
 var Job = require('./lib/job');
 var argv = require('minimist')(process.argv.slice(2));
-var uglifyjs = require('uglifyjs');
-var uglifycss = require('uglifycss');
+var UglifyJS = require('uglifyjs');
+var UglifyCSS = require('uglifycss');
 var cliPackage = require('./package');
 
 util.showDebug = argv.d || argv.debug;
@@ -85,17 +85,47 @@ connection.on('ready', function() {
           util.debug('queue is bound');
 
           // Receive messages
-          queue.subscribe(function(message, headers, deliveryInfo, messageObject) {
-            var job = new Job(
-              exchange,
-              message,
-              headers,
-              deliveryInfo,
-              messageObject
-            );
-            job.sendSuccess('asdf');
-            util.debug('received message', message);
-          });
+          queue.subscribe(
+            function(message, headers, deliveryInfo, messageObject) {
+              var job = new Job(
+                exchange,
+                message,
+                headers,
+                deliveryInfo,
+                messageObject
+              );
+
+              try {
+                var jobObject = JSON.parse(job.getBody());
+                if (typeof jobObject.type === 'undefined' ||
+                  typeof jobObject.content === 'undefined') {
+                  job.sendFail('Job was missing required type or content.');
+                } else {
+                  if (jobObject.type === 'js') {
+                    util.debug('minifying js ...');
+                    var result = UglifyJS.minify(
+                      jobObject.content,
+                      {
+                        fromString: true,
+                        mangle: true,
+                        compress: true
+                      }
+                    );
+                    util.debug('done');
+                    job.sendSuccess(result.code);
+                  } else if (jobObject.type === 'css') {
+                    // Compress CSS.
+                    var response = '';
+                    job.sendSuccess(response);
+                  } else {
+                    job.sendFail('Unknown resource type.');
+                  }
+                }
+              } catch (e) {
+                job.sendFail('Job was not formatted correctly.');
+              }
+            }
+          );
           util.debug('queue is subscribed');
         }
       );
